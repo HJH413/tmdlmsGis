@@ -5,9 +5,9 @@ import axios from "axios";
 import "../css/map.css";
 import * as turf from "@turf/turf";
 
-const { kakao } = window;
+const {kakao} = window;
 
-const Map = ({ address }) => {
+const Map = ({address}) => {
     const {mapLayers} = useMapLayers();
     const {searchData, setSearchData} = useSearchContext();
     const [Map, setMap] = useState(null); // kakao map api;
@@ -16,7 +16,7 @@ const Map = ({ address }) => {
     const [layers, setLayers] = useState([]); // 호출된 레이어 배열
     const [markerData, setMarkerData] = useState(null); // 위도
     const [allBasin, setAllBasin] = useState(null); // 전체 단위유역 데이터
-    const [allSBasin, setAllSBasin] = useState(null); // 전체 단위유역 데이터
+    const [allSBasin, setAllSBasin] = useState(null); // 전체 특대유역 데이터
     const BASIN_TYPE = "basin";
 
     const callLayer = (layerType, layerName, strokeColor) => { // 레이어 호출
@@ -129,9 +129,9 @@ const Map = ({ address }) => {
     const fontSizeChange = (zoomLevel) => {
         let fontSize = zoomLevel > 11 ? 10
             : zoomLevel > 8 ? 15
-            : zoomLevel > 6 ? 25
-            : zoomLevel > 4 ? 35
-            : 50;
+                : zoomLevel > 6 ? 25
+                    : zoomLevel > 4 ? 35
+                        : 50;
 
         let customOverlays = document.querySelectorAll(".customOverlay");
 
@@ -155,8 +155,7 @@ const Map = ({ address }) => {
         }));
 
         // 단위유역 전체레이어 호출
-
-        if (allBasin === null) { 
+        if (allBasin === null) {
             axios.get(`/data/layer/basin/allBasin.geojson`)
                 .then((response) => {
                     const features = response.data.features;
@@ -175,7 +174,7 @@ const Map = ({ address }) => {
             axios.get(`/data/layer/basin/allSBasin.geojson`)
                 .then((response) => {
                     const features = response.data.features;
-                    setAllBasin(features);
+                    setAllSBasin(features);
                     performSearchBasin(address, features, false); // 데이터를 불러온 후 검색 수행
                 })
                 .catch((error) => {
@@ -194,6 +193,21 @@ const Map = ({ address }) => {
         geocoder.addressSearch(address, function (result, status) {
             // 정상적으로 검색이 완료됐으면
             if (status === kakao.maps.services.Status.OK) {
+                if (check) {
+                    // 단위유역일때만 마커생성하도록
+                    let coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                    // 결과값으로 받은 위치를 마커로 표시
+                    let marker = new kakao.maps.Marker({
+                        position: coords
+                    });
+
+                    marker.setMap(Map);
+                    // 지도의 중심을 결과값으로 받은 위치로 이동
+                    Map.setCenter(coords);
+                    setMarkerData(marker);
+                }
+
                 // 변환된 좌표를 사용하여 폴리곤 검색
                 findPolygonContainingPoint([result[0].x, result[0].y], features, address, check);
             }
@@ -220,23 +234,9 @@ const Map = ({ address }) => {
 
                 if (check) {
                     basinName = unit.properties.BASIN;
-
-                    // 단위유역일때만 마커생성하도록
-                    let coords = new kakao.maps.LatLng(point[1], point[0]);
-
-                    // 결과값으로 받은 위치를 마커로 표시
-                    let marker = new kakao.maps.Marker({
-                        position: coords
-                    });
-
-                    marker.setMap(Map);
-                    // 지도의 중심을 결과값으로 받은 위치로 이동
-                    Map.setCenter(coords);
-                    setMarkerData(marker);
                 } else {
                     sBasinName = unit.properties.BASIN;
                 }
-
 
                 unit.geometry.coordinates[0].forEach((coordinates) => {
                     coordinates.forEach((LatLng) => {
@@ -296,11 +296,10 @@ const Map = ({ address }) => {
         if (window.navigator.geolocation) {
             window.navigator.geolocation.getCurrentPosition(
                 (event) => {
-                setLatitude(event.coords.latitude); // 위도 설정
-                setLongitude(event.coords.longitude); // 경도 설정
-            }, () => {
-
-            });
+                    setLatitude(event.coords.latitude); // 위도 설정
+                    setLongitude(event.coords.longitude); // 경도 설정
+                }, () => {
+                });
         }
 
         const container = document.getElementById('map');
