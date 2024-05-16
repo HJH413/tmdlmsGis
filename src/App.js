@@ -15,6 +15,7 @@ function App() {
     const handleAddressSelect = (address) => {
         setAddress(address);
         setShowModal(false);
+
     }
 
     return (
