@@ -1,0 +1,30 @@
+.sidebarMain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column; /* 위에서 아래로 정렬 */
+    z-index: 1001;
+}
+
+.sidebarToggleDiv {
+    position: absolute; /* sidebarMain에 대해 절대적 위치 */
+    top: 0; /* 상단에 위치 */
+    left: 0; /* 왼쪽 상단에 위치 */
+    z-index: 1010; /* 사이드바 위에 항상 보이게 */
+    padding-top: 5px;
+}
+
+.sidebar {
+    width: 15vw;
+    height: 100vh;
+    background-color: rgb(255, 255, 255, 0.8);
+    transition: transform 0.3s ease;
+    transform: translateX(0); /* 사이드바 표시 */
+    padding-top: 30px; /* 채크박스와 내용 사이의 간격 */
+}
+
+.sidebar.hidden {
+    transform: translateX(-100%); /* 사이드바 숨김 */
+}
